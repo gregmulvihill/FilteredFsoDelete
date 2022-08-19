@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "FilteredFsoDelete": {
+      "commandName": "Project",
+      "commandLineArgs": "C:\\Repos\\Pinnacle d-\\\\\\.vs$ d-\\\\bin$ d-\\\\bin$ d-\\\\obj$ d+\\\\lib\\\\ f-\\.user$"
+    }
+  }
+}
