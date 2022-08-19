@@ -17,9 +17,9 @@ namespace FilteredFsoDelete
 
             if (len < 2)
             {
-                // C:\Repos\Pinnacle d-\\\.vs$ d-\\bin$ d-\\bin$ d-\\obj$ d+\\lib\\ f-\.user$
+                // C:\dev\project d-\\\.vs$ d-\\bin$ d-\\obj$ d+\\lib\\ f-\.user$
                 Console.WriteLine($"Use: {Path.GetFileName(Environment.ProcessPath)} target_dir <d-dir_regex_del> <d+d_regex_not_del> <f-file_regex_del> <f+file_regex_not_del>");
-                Console.WriteLine($@"Example: {Path.GetFileName(Environment.ProcessPath)} C:\dev\project\ d-\\\.vs$ d-\\bin$ d-\\bin$ d-\\obj$ d+\\lib\\ f-\.user$");
+                Console.WriteLine($@"Example: {Path.GetFileName(Environment.ProcessPath)} C:\dev\project\ d-\\\.vs$ d-\\bin$ d-\\obj$ d+\\lib\\ f-\.user$");
                 Environment.Exit(-1);
             }
 
