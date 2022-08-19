@@ -1,4 +1,6 @@
-# FilteredFsoDelete
+# Filtered File System Object Delete
+
+Delete directories and files with regular expression filters.
 
 ```
 Use: FilteredFsoDelete.exe target_dir <d-dir_regex_del> <d+d_regex_not_del> <f-file_regex_del> <f+file_regex_not_del>
