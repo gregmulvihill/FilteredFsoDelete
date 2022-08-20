@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
@@ -7,8 +7,8 @@
         <Nullable>enable</Nullable>
         <ApplicationIcon>icon.ico</ApplicationIcon>
         <SignAssembly>True</SignAssembly>
-        <Platforms>AnyCPU;x64;x86</Platforms>
-        <RuntimeIdentifiers>win10-AnyCPU;win10-x64;win10-x86;</RuntimeIdentifiers>
+        <Platforms>x64;x86</Platforms>
+        <RuntimeIdentifiers>win-x64;win-x86;</RuntimeIdentifiers>
     </PropertyGroup>
 
     <ItemGroup>
