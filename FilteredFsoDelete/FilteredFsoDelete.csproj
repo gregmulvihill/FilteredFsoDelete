@@ -1,14 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <OutputType>Exe</OutputType>
-        <TargetFramework>net6.0-windows</TargetFramework>
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
         <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
         <ApplicationIcon>icon.ico</ApplicationIcon>
         <SignAssembly>True</SignAssembly>
         <Platforms>x64;x86</Platforms>
         <RuntimeIdentifiers>win-x64;win-x86;</RuntimeIdentifiers>
+        <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+        <UseWindowsForms>True</UseWindowsForms>
     </PropertyGroup>
 
     <ItemGroup>

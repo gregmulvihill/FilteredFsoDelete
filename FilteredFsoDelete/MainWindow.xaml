@@ -1,0 +1,167 @@
+﻿<Window
+    x:Class="FilteredFsoDelete.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:local="clr-namespace:FilteredFsoDelete"
+    mc:Ignorable="d"
+    Title="MainWindow"
+    Height="450"
+    Width="800"
+    Closing="Window_Closing">
+    <Window.Resources>
+        <Style
+            TargetType="GroupBox">
+            <Setter
+                Property="Margin"
+                Value="5,5,5,5" />
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition
+                Height="Auto" />
+            <RowDefinition
+                Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+
+        <Grid
+            Grid.Row="0">
+            <Grid.RowDefinitions>
+                <RowDefinition
+                    Height="Auto" />
+                <RowDefinition />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition
+                    Width="Auto" />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+
+            <GroupBox
+                Grid.Row="0"
+                Grid.ColumnSpan="3"
+                Header="Target Directory">
+                <DockPanel>
+                    <Button
+                        DockPanel.Dock="Right"
+                        VerticalAlignment="Center"
+                        Margin="5,0,0,0"
+                        Width="{Binding Path=ActualHeight, RelativeSource={RelativeSource Mode=Self}}"
+                        Content="..."
+                        Click="Button_Click_FolderBrowser" />
+                    <TextBox
+                        x:Name="TargetDirectory"
+                        VerticalAlignment="Center"
+                        Text="C:\ExampleDir\ExampleSubDir" />
+                </DockPanel>
+            </GroupBox>
+
+            <GroupBox
+                Grid.Row="1"
+                Grid.Column="0"
+                Header="Directories - Keep"
+                ScrollViewer.VerticalScrollBarVisibility="Visible">
+                <ScrollViewer>
+                    <TextBox
+                        x:Name="DirectoriesKeep"
+                        AcceptsReturn="True" />
+                </ScrollViewer>
+            </GroupBox>
+
+            <GroupBox
+                Grid.Row="1"
+                Grid.Column="2"
+                Header="Files - Keep"
+                ScrollViewer.VerticalScrollBarVisibility="Visible">
+                <ScrollViewer>
+                    <TextBox
+                        x:Name="FilesKeep"
+                        AcceptsReturn="True" />
+                </ScrollViewer>
+            </GroupBox>
+
+            <GroupBox
+                Grid.Row="2"
+                Grid.Column="0"
+                Header="Directories - Delete"
+                ScrollViewer.VerticalScrollBarVisibility="Visible">
+                <ScrollViewer>
+                    <TextBox
+                        x:Name="DirectoriesDelete"
+                        AcceptsReturn="True" />
+                </ScrollViewer>
+            </GroupBox>
+
+            <GroupBox
+                Grid.Row="2"
+                Grid.Column="2"
+                Header="Files - Delete"
+                ScrollViewer.VerticalScrollBarVisibility="Visible">
+                <ScrollViewer>
+                    <TextBox
+                        x:Name="FilesDelete"
+                        AcceptsReturn="True" />
+                </ScrollViewer>
+            </GroupBox>
+        </Grid>
+
+        <GridSplitter
+            Grid.Row="1"
+            Background="#FFE85436"
+            Height="3"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Stretch"
+            Cursor="ScrollNS">
+        </GridSplitter>
+
+        <Grid
+            Grid.Row="2">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition
+                    Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <GroupBox
+                Grid.Row="0"
+                Grid.ColumnSpan="2"
+                Header="Log">
+                <ListBox
+                    x:Name="Log"
+                    Margin="5"
+                    ScrollViewer.VerticalScrollBarVisibility="Visible"
+                    ScrollViewer.HorizontalScrollBarVisibility="Auto" />
+            </GroupBox>
+            <StackPanel
+                Grid.Row="1"
+                Grid.ColumnSpan="2"
+                Orientation="Horizontal"
+                HorizontalAlignment="Center">
+                <Button
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Margin="10"
+                    Padding="15,5"
+                    Content="Test"
+                    Click="Button_Click_Test" />
+                <Button
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Margin="10"
+                    Padding="15,5"
+                    Content="Run"
+                    Click="Button_Click_Run" />
+            </StackPanel>
+        </Grid>
+
+    </Grid>
+</Window>
