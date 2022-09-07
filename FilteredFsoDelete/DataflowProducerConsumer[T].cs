@@ -4,94 +4,73 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
+using System.Windows.Markup;
 
 namespace FilteredFsoDelete
 {
     public class DataflowProducerConsumer<T>
     {
+        private Func<int, T> _getNewItem;
+
         private Task _producerTask;
-        private BufferBlock<T> _buffer = new BufferBlock<T>();
+        // private BufferBlock<T> _buffer = new BufferBlock<T>();
 
-        public DataflowProducerConsumer()
+        public async Task<int> ProduceAsync(ITargetBlock<T> target, Func<int, T> getNewItem)
         {
-        }
+            _getNewItem = getNewItem;
 
-        public async Task<(int Count, int BytesProcessed)> ProduceAsync(ITargetBlock<T> target)
-        {
+            // fake async/await
+            await Task.CompletedTask;
+
+            var threadId = Thread.CurrentThread.ManagedThreadId;
             var count = 0;
-            var bytesProcessed = 0;
 
-            using (var sw = new StreamReader($@"C:\ProgramData\Dell\DellDataVault\Log\DDVSVCAPI_Errlog.txt"))
+            var len = 100;
+
+            for (var pos = 0; pos < len; pos++)
             {
-                while (!sw.EndOfStream)
+                T item = _getNewItem(pos);
+
+                var per = 100.0 * ((double)(pos + 1) / (double)(len));
+                var msg = $"{pos + 1}/{len} {per:N2}%";
+                Debug.WriteLine(msg);
+                Debug.WriteLine($"Producer Thread - ThreadId: {threadId}, count: {++count}, msg: {item}");
+
+                if (!target.Post(item))
                 {
-                    var pos = sw.BaseStream.Position;
-                    var len = sw.BaseStream.Length;
-                    var per = 100.0 * (pos / (double)len);
-                    var msg = $"{pos}/{len} {per:N2}%";
-
-                    var line = await sw.ReadLineAsync();
-                    var bytes = Encoding.UTF8.GetBytes(line);
-                    bytesProcessed += bytes.Length;
-                    var genericType = typeof(T);
-                    var message = (T)Convert.ChangeType(bytes, genericType);
-
-                    if (!target.Post(message))
-                    {
-                        var msg0 = Encoding.UTF8.GetString((byte[])(dynamic)message);
-                    }
-
-                    count++;
+                    Debugger.Break();
+                    //var msg0 = Encoding.UTF8.GetString((MyType)(dynamic)message);
                 }
+
+                Thread.Sleep(10);
+
+                count++;
             }
-
-            #region MyRegion
-
-            //var rand = new Random();
-
-            //for (int i = 0; i < 100; ++i)
-            //{
-            //    byte[] buffer0 = GetNext();
-
-            //    var genericType = typeof(T);
-            //    var message = (T)Convert.ChangeType(buffer0, genericType);
-            //    target.Post(message);
-
-            //    //var messageHeader = new DataflowMessageHeader();
-            //    //var rr = target.OfferMessage(messageHeader, message, _buffer, false);
-            //} 
-            #endregion
 
             target.Complete();
 
-            return (count, bytesProcessed); ;
+            return count;
         }
 
-        private byte[] GetNext()
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<(int Count, int BytesProcessed)> ConsumeAsync(IReceivableSourceBlock<byte[]> source)
+        public async Task<int> ConsumeAsync(IReceivableSourceBlock<T> source, Func<T, int> consumer)
         {
             var threadId = Thread.CurrentThread.ManagedThreadId;
-
             var count = 0;
-            var bytesProcessed = 0;
 
             while (await source.OutputAvailableAsync())
             {
                 while (source.TryReceive(out var data))
                 {
-                    bytesProcessed += data.Length;
-                    var msg = Encoding.UTF8.GetString(data);
-                    // Debug.WriteLine($"count: {++count}, msg: {msg}, ThreadId: {threadId}");
+                    var result = consumer(data);
+                    Debug.WriteLine($"Consumer Thread - ThreadId: {threadId}, count: {++count}, msg: {data}");
+                    Thread.Sleep(125);
                 }
             }
 
-            return (count, bytesProcessed);
+            return count;
         }
 
         //public void Produce(ITargetBlock<T> target)
@@ -157,19 +136,13 @@ namespace FilteredFsoDelete
         {
             var result = f("arg1", logMsg =>
             {
-                //logMsg;
             });
 
             var huh = result;
         }
 
-        internal void SignalDone()
+        public void Stop()
         {
         }
-
-        //internal void StartProducer(Action<object, object> value)
-        //{
-        //    throw new NotImplementedException();
-        //}
     }
 }

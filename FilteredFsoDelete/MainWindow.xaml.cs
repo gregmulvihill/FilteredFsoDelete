@@ -1,5 +1,5 @@
-﻿using Microsoft.VisualBasic.Logging;
-using System.IO;
+﻿using System.IO;
+using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
 using System.Threading.Tasks.Dataflow;
 using System.Windows;
@@ -19,64 +19,41 @@ namespace FilteredFsoDelete
         private IEnumerable<string> _defaultFilesDelete = new[] { @"\.user$", };
         private IEnumerable<string> _defaultDirectoriesDelete = new[] { @"\\\.vs$", @"\\bin$", @"\\obj$", };
 
+        private ProducerConsumer<MyType> _producerConsumer;
+
+        private SettingsEx? _settings;
+
         public MainWindow()
         {
             InitializeComponent();
             LoadSettings();
+
+            _producerConsumer = new ProducerConsumer<MyType>(_settings, Producer, Consumer);
+
+            this.Loaded += MainWindow_Loaded;
+
         }
 
-        private void SaveSettings()
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            var settings = new SettingsEx
+            Task.Run(() => { Task.Delay(2000); Dispatcher.Invoke(() => { Button_Click_Test(default, default); }); });
+        }
+
+        private int Consumer(MyType item)
+        {
+            return item.Id;
+        }
+
+        private MyType Producer(int index)
+        {
+            var item = new MyType
             {
-                TargetDirectory = TargetDirectory.Text,
-
-                DirectoriesKeep = DirectoriesKeep.Text,
-                FilesKeep = FilesKeep.Text,
-
-                DirectoriesDelete = DirectoriesDelete.Text,
-                FilesDelete = FilesDelete.Text,
+                Id = index,
+                Name = $"Name {index}",
+                Description = $"Description {index}",
             };
 
-            var json = JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = true });
-            File.WriteAllText(_settingsFilePath, json);
-        }
-
-        private void LoadSettings()
-        {
-            if (!File.Exists(_settingsFilePath))
-            {
-                TargetDirectory.Text = _defaultTargetDirectory;
-                FilesKeep.Text = String.Join(Environment.NewLine, _defaultFileKeep);
-                DirectoriesKeep.Text = String.Join(Environment.NewLine, _defaultDirectoriesKeep);
-                FilesDelete.Text = String.Join(Environment.NewLine, _defaultFilesDelete);
-                DirectoriesDelete.Text = String.Join(Environment.NewLine, _defaultDirectoriesDelete);
-
-                SaveSettings();
-            }
-
-            var json = File.ReadAllText(_settingsFilePath);
-            var settings = JsonSerializer.Deserialize<SettingsEx>(json);
-
-            TargetDirectory.Text = settings.TargetDirectory;
-            FilesKeep.Text = String.Join(Environment.NewLine, settings.FilesKeep);
-            DirectoriesKeep.Text = String.Join(Environment.NewLine, settings.DirectoriesKeep);
-            FilesDelete.Text = String.Join(Environment.NewLine, settings.FilesDelete);
-            DirectoriesDelete.Text = String.Join(Environment.NewLine, settings.DirectoriesDelete);
-        }
-
-        private void Button_Click_Run(object sender, RoutedEventArgs e)
-        {
-            Log.Items.Clear();
-
-            Task.Run(async () => await RunThreadAsync(false));
-        }
-
-        private void Button_Click_Test(object sender, RoutedEventArgs e)
-        {
-            Log.Items.Clear();
-
-            Task.Run(async () => await RunThreadAsync(true));
+            return item;
         }
 
         private void Log_(string msg)
@@ -95,97 +72,58 @@ namespace FilteredFsoDelete
             });
         }
 
-        private async Task RunThreadAsync(bool test)
+        private void SaveSettings()
         {
-            //CaptureUserInput(out var root, out var dirKeep, out var dirDelete, out var fileKeep, out var fileDelete);
-
-            var root = TargetDirectory.ViaDispatcher(x => x.Text);
-
-            var dirKeep = DirectoriesDelete.ViaDispatcher(x => x.Text).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            var dirDelete = DirectoriesKeep.ViaDispatcher(x => x.Text).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-
-            var fileKeep = FilesDelete.ViaDispatcher(x => x.Text).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            var fileDelete = FilesKeep.ViaDispatcher(x => x.Text).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-
-            var buffer = new BufferBlock<byte[]>();
-            var pc = new DataflowProducerConsumer<byte[]>();
-
-            var ct = Enumerable.Range(0, 1).Select(x => Task.Run(() => ProduceAsync(buffer, pc))).ToArray();
-            var pt = Enumerable.Range(0, 5).Select(x => Task.Run(() => ConsumeAsync(buffer, pc))).ToArray();
-
-            Task.WaitAll(pt);
-            Task.WaitAll(ct);
-
-            pc.SignalDone();
-
-            var ctResults = ct.Select(x => x.Result).ToArray();
-            var ptResults = pt.Select(x => x.Result).ToArray();
-        }
-
-        private static Task<(int, int)> ConsumeAsync(BufferBlock<byte[]> buffer, DataflowProducerConsumer<byte[]> pc)
-        {
-            return pc.ConsumeAsync(buffer);
-        }
-
-        private static Task<(int, int)> ProduceAsync(BufferBlock<byte[]> buffer, DataflowProducerConsumer<byte[]> pc)
-        {
-            return pc.ProduceAsync(buffer);
-        }
-
-        private Task<Action<int, string>> NewMethod(
-            bool test,
-            Action<string> ff,
-            string root,
-            string[] dirKeep,
-            string[] dirDelete,
-            string[] fileKeep,
-            string[] fileDelete)
-        {
-            // TODO: move into ProduceAsync, ConsumeAsync
-            Log_("### Delete Directories...");
-            var countDirs = FilteredFsoDeleteLib.DeleteDirectories(root, dirKeep, dirDelete, ff /*x => Log_(x)*/, test);
-            Log_($"### Deleted {countDirs} Directories");
-
-            Log_("### Delete Files...");
-            var countFiles = FilteredFsoDeleteLib.DeleteFiles(root, fileKeep, fileDelete, ff /*x => Log_(x)*/, test);
-            Log_($"### Deleted {countFiles} Files");
-
-            return default;
-        }
-
-        private void CaptureUserInput(
-            out string root,
-            out string[] dirKeep,
-            out string[] dirDelete,
-            out string[] fileKeep,
-            out string[] fileDelete)
-        {
-            string root_ = string.Empty;
-
-            var dirKeep_ = Array.Empty<string>();
-            var dirDelete_ = Array.Empty<string>();
-
-            var fileKeep_ = Array.Empty<string>();
-            var fileDelete_ = Array.Empty<string>();
-
-            Dispatcher.Invoke(() =>
+            _settings = new SettingsEx
             {
-                root_ = TargetDirectory.Text;
+                TargetDirectory = TargetDirectory.Text,
 
-                dirKeep_ = DirectoriesDelete.Text.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                dirDelete_ = DirectoriesKeep.Text.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                DirectoriesKeep = DirectoriesKeep.Text,
+                FilesKeep = FilesKeep.Text,
 
-                fileKeep_ = FilesDelete.Text.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                fileDelete_ = FilesKeep.Text.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            });
+                DirectoriesDelete = DirectoriesDelete.Text,
+                FilesDelete = FilesDelete.Text,
+            };
 
-            root = root_;
+            var json = JsonSerializer.Serialize(_settings, new JsonSerializerOptions { WriteIndented = true });
+            File.WriteAllText(_settingsFilePath, json);
+        }
 
-            dirKeep = dirKeep_;
-            dirDelete = dirDelete_;
+        private void LoadSettings()
+        {
+            if (!File.Exists(_settingsFilePath))
+            {
+                TargetDirectory.Text = _defaultTargetDirectory;
+                FilesKeep.Text = String.Join(Environment.NewLine, _defaultFileKeep);
+                DirectoriesKeep.Text = String.Join(Environment.NewLine, _defaultDirectoriesKeep);
+                FilesDelete.Text = String.Join(Environment.NewLine, _defaultFilesDelete);
+                DirectoriesDelete.Text = String.Join(Environment.NewLine, _defaultDirectoriesDelete);
 
-            fileKeep = fileKeep_;
-            fileDelete = fileDelete_;
+                SaveSettings();
+            }
+
+            var json = File.ReadAllText(_settingsFilePath);
+            _settings = JsonSerializer.Deserialize<SettingsEx>(json);
+
+            TargetDirectory.Text = _settings.TargetDirectory;
+            FilesKeep.Text = String.Join(Environment.NewLine, _settings.FilesKeep);
+            DirectoriesKeep.Text = String.Join(Environment.NewLine, _settings.DirectoriesKeep);
+            FilesDelete.Text = String.Join(Environment.NewLine, _settings.FilesDelete);
+            DirectoriesDelete.Text = String.Join(Environment.NewLine, _settings.DirectoriesDelete);
+        }
+
+        private void Button_Click_Run(object sender, RoutedEventArgs e)
+        {
+            Log.Items.Clear();
+
+            Task.Run(async () => await _producerConsumer.RunThreadAsync(false));
+        }
+
+        private void Button_Click_Test(object sender, RoutedEventArgs e)
+        {
+            Log.Items.Clear();
+
+            Task.Run(async () => await _producerConsumer.RunThreadAsync(true));
         }
 
         private void Button_Click_FolderBrowser(object sender, RoutedEventArgs e)
