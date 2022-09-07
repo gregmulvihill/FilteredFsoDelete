@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Concurrent;
+using System.IO;
 using System.Text.RegularExpressions;
 
 namespace FilteredFsoDelete
@@ -44,11 +45,21 @@ namespace FilteredFsoDelete
 
             foreach (var item in filtered)
             {
+                //while (_tasks.Count > 10)
+                {
+                    // Thread.Sleep(100);
+                    // Task.Delay(100);
+                    Tools.DoEvents();
+                }
+
                 try
                 {
                     log($"Deleting: {item}");
+                    //_tasks.Add(Task.Run(() =>
+                    //{
                     func(item);
                     ++count;
+                    //}));
                 }
                 catch (Exception e)
                 {

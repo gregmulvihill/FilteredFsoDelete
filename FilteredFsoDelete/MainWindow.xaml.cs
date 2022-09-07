@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualBasic.Logging;
 using System.IO;
 using System.Text.Json;
+using System.Threading.Tasks.Dataflow;
 using System.Windows;
 
 namespace FilteredFsoDelete
@@ -68,14 +69,14 @@ namespace FilteredFsoDelete
         {
             Log.Items.Clear();
 
-            Task.Run(() => RunThread(false));
+            Task.Run(async () => await RunThreadAsync(false));
         }
 
         private void Button_Click_Test(object sender, RoutedEventArgs e)
         {
             Log.Items.Clear();
 
-            Task.Run(() => RunThread(true));
+            Task.Run(async () => await RunThreadAsync(true));
         }
 
         private void Log_(string msg)
@@ -94,7 +95,7 @@ namespace FilteredFsoDelete
             });
         }
 
-        private void RunThread(bool test)
+        private async Task RunThreadAsync(bool test)
         {
             //CaptureUserInput(out var root, out var dirKeep, out var dirDelete, out var fileKeep, out var fileDelete);
 
@@ -106,13 +107,50 @@ namespace FilteredFsoDelete
             var fileKeep = FilesDelete.ViaDispatcher(x => x.Text).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
             var fileDelete = FilesKeep.ViaDispatcher(x => x.Text).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
+            var buffer = new BufferBlock<byte[]>();
+            var pc = new DataflowProducerConsumer<byte[]>();
+
+            var ct = Enumerable.Range(0, 1).Select(x => Task.Run(() => ProduceAsync(buffer, pc))).ToArray();
+            var pt = Enumerable.Range(0, 5).Select(x => Task.Run(() => ConsumeAsync(buffer, pc))).ToArray();
+
+            Task.WaitAll(pt);
+            Task.WaitAll(ct);
+
+            pc.SignalDone();
+
+            var ctResults = ct.Select(x => x.Result).ToArray();
+            var ptResults = pt.Select(x => x.Result).ToArray();
+        }
+
+        private static Task<(int, int)> ConsumeAsync(BufferBlock<byte[]> buffer, DataflowProducerConsumer<byte[]> pc)
+        {
+            return pc.ConsumeAsync(buffer);
+        }
+
+        private static Task<(int, int)> ProduceAsync(BufferBlock<byte[]> buffer, DataflowProducerConsumer<byte[]> pc)
+        {
+            return pc.ProduceAsync(buffer);
+        }
+
+        private Task<Action<int, string>> NewMethod(
+            bool test,
+            Action<string> ff,
+            string root,
+            string[] dirKeep,
+            string[] dirDelete,
+            string[] fileKeep,
+            string[] fileDelete)
+        {
+            // TODO: move into ProduceAsync, ConsumeAsync
             Log_("### Delete Directories...");
-            var countDirs = FilteredFsoDeleteLib.DeleteDirectories(root, dirKeep, dirDelete, x => Log_(x), test);
+            var countDirs = FilteredFsoDeleteLib.DeleteDirectories(root, dirKeep, dirDelete, ff /*x => Log_(x)*/, test);
             Log_($"### Deleted {countDirs} Directories");
 
             Log_("### Delete Files...");
-            var countFiles = FilteredFsoDeleteLib.DeleteFiles(root, fileKeep, fileDelete, x => Log_(x), test);
+            var countFiles = FilteredFsoDeleteLib.DeleteFiles(root, fileKeep, fileDelete, ff /*x => Log_(x)*/, test);
             Log_($"### Deleted {countFiles} Files");
+
+            return default;
         }
 
         private void CaptureUserInput(
