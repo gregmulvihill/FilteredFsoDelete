@@ -1,7 +1,5 @@
 ﻿using System.IO;
-using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
-using System.Threading.Tasks.Dataflow;
 using System.Windows;
 
 namespace FilteredFsoDelete
@@ -12,15 +10,12 @@ namespace FilteredFsoDelete
     public partial class MainWindow : Window
     {
         private string _settingsFilePath = @".\settings.json";
-
         private string _defaultTargetDirectory = @"C:\Repos";
         private IEnumerable<string> _defaultFileKeep = new string[] { };
         private IEnumerable<string> _defaultDirectoriesKeep = new[] { @"\\lib\\", };
         private IEnumerable<string> _defaultFilesDelete = new[] { @"\.user$", };
         private IEnumerable<string> _defaultDirectoriesDelete = new[] { @"\\\.vs$", @"\\bin$", @"\\obj$", };
-
-        private ProducerConsumer<MyType> _producerConsumer;
-
+        private ProducerConsumer<string, SettingsEx> _producerConsumer;
         private SettingsEx? _settings;
 
         public MainWindow()
@@ -28,35 +23,10 @@ namespace FilteredFsoDelete
             InitializeComponent();
             LoadSettings();
 
-            _producerConsumer = new ProducerConsumer<MyType>(_settings, Producer, Consumer);
-
-            this.Loaded += MainWindow_Loaded;
-
+            _producerConsumer = new ProducerConsumer<string, SettingsEx>(x => new MyProducer(), x => new MyConsumer(), _settings, LogWriteLine);
         }
 
-        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
-        {
-            Task.Run(() => { Task.Delay(2000); Dispatcher.Invoke(() => { Button_Click_Test(default, default); }); });
-        }
-
-        private int Consumer(MyType item)
-        {
-            return item.Id;
-        }
-
-        private MyType Producer(int index)
-        {
-            var item = new MyType
-            {
-                Id = index,
-                Name = $"Name {index}",
-                Description = $"Description {index}",
-            };
-
-            return item;
-        }
-
-        private void Log_(string msg)
+        private void LogWriteLine(string msg)
         {
             Log.Dispatcher.Invoke(() =>
             {
@@ -114,6 +84,8 @@ namespace FilteredFsoDelete
 
         private void Button_Click_Run(object sender, RoutedEventArgs e)
         {
+            SaveSettings();
+
             Log.Items.Clear();
 
             Task.Run(async () => await _producerConsumer.RunThreadAsync(false));

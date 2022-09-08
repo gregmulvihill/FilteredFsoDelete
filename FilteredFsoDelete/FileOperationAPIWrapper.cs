@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace FilteredFsoDelete
+﻿namespace FilteredFsoDelete
 {
     using System.Runtime.InteropServices;
 
@@ -35,7 +29,7 @@ namespace FilteredFsoDelete
             /// </summary>
             FOF_SIMPLEPROGRESS = 0x0100,
             /// <summary>
-            /// Surpress errors, if any occur during the process.
+            /// Suppress errors, if any occur during the process.
             /// </summary>
             FOF_NOERRORUI = 0x0400,
             /// <summary>
@@ -129,10 +123,9 @@ namespace FilteredFsoDelete
         public static bool MoveToRecycleBin(string path)
         {
             return Send(path, FileOperationFlags.FOF_NOCONFIRMATION | FileOperationFlags.FOF_NOERRORUI | FileOperationFlags.FOF_SILENT);
-
         }
 
-        private static bool deleteFile(string path, FileOperationFlags flags)
+        private static bool DeleteFile(string path, FileOperationFlags flags)
         {
             try
             {
@@ -153,9 +146,11 @@ namespace FilteredFsoDelete
 
         public static bool DeleteCompletelySilent(string path)
         {
-            return deleteFile(path,
-                              FileOperationFlags.FOF_NOCONFIRMATION | FileOperationFlags.FOF_NOERRORUI |
-                              FileOperationFlags.FOF_SILENT);
+            return DeleteFile(
+                path,
+                FileOperationFlags.FOF_NOCONFIRMATION |
+                FileOperationFlags.FOF_NOERRORUI |
+                FileOperationFlags.FOF_SILENT);
         }
     }
 }
