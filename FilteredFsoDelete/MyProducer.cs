@@ -1,12 +1,13 @@
 ﻿using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
+using FilteredFsoDelete.ProducerConsumer;
 
 namespace FilteredFsoDelete
 {
-    public class MyProducer : IProducer<string, SettingsEx>, IDisposable
+    public class MyProducer : IProducer<string, AppSettings>, IDisposable
     {
-        private SettingsEx _settings;
+        private AppSettings _settings;
         private Action<string> _log;
         private bool _demoMode;
         private IEnumerable<string> _filteredPaths;
@@ -14,7 +15,7 @@ namespace FilteredFsoDelete
 
         public int Count { get; private set; }
 
-        public void Init(SettingsEx context, Action<string> log, bool demoMode)
+        public void Init(AppSettings context, Action<string> log, bool demoMode)
         {
             _settings = context;
             _log = log;

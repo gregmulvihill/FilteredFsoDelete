@@ -1,6 +1,6 @@
 ﻿namespace FilteredFsoDelete
 {
-    public class SettingsEx
+    public class AppSettings
     {
         public string TargetDirectory { get; set; }
 

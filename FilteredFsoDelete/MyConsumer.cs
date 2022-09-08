@@ -1,14 +1,16 @@
 ﻿using System.Diagnostics;
+using System.IO;
+using FilteredFsoDelete.ProducerConsumer;
 
 namespace FilteredFsoDelete
 {
-    public class MyConsumer : IConsumer<string, SettingsEx>
+    public class MyConsumer : IConsumer<string, AppSettings>
     {
-        private SettingsEx _settings;
+        private AppSettings _settings;
         private Action<string> _log;
         private bool _demoMode;
 
-        public void Init(SettingsEx settings, Action<string> log, bool demoMode)
+        public void Init(AppSettings settings, Action<string> log, bool demoMode)
         {
             _settings = settings;
             _log = log;
@@ -26,7 +28,36 @@ namespace FilteredFsoDelete
                 return true;
             }
 
-            return FileOperationAPIWrapper.MoveToRecycleBin(path);
+            if (Directory.Exists(path))
+            {
+                try
+                {
+                    Directory.Delete(path, true);
+                }
+                catch
+                {
+                }
+            }
+            else
+            if (File.Exists(path))
+            {
+                try
+                {
+                    File.Delete(path);
+                }
+                catch
+                {
+                }
+            }
+            else
+            {
+                return false;
+            }
+
+            return true;
+
+            //return FileOperationAPIWrapper.DeleteCompletelySilent(path);
+            //return FileOperationAPIWrapper.MoveToRecycleBin(path);
         }
 
         public void Dispose()

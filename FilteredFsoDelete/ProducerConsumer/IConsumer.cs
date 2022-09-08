@@ -1,4 +1,4 @@
-﻿namespace FilteredFsoDelete
+﻿namespace FilteredFsoDelete.ProducerConsumer
 {
     public interface IConsumer<T, TCONTEXT> : IBase<TCONTEXT>
     {

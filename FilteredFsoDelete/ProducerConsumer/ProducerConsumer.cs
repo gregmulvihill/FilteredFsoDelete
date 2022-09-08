@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Threading.Tasks.Dataflow;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
-namespace FilteredFsoDelete
+namespace FilteredFsoDelete.ProducerConsumer
 {
     public class ProducerConsumer<T, U>
     {

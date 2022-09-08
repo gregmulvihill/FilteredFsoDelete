@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Text.Json;
 using System.Windows;
+using FilteredFsoDelete.ProducerConsumer;
 
 namespace FilteredFsoDelete
 {
@@ -15,15 +16,15 @@ namespace FilteredFsoDelete
         private IEnumerable<string> _defaultDirectoriesKeep = new[] { @"\\lib\\", };
         private IEnumerable<string> _defaultFilesDelete = new[] { @"\.user$", };
         private IEnumerable<string> _defaultDirectoriesDelete = new[] { @"\\\.vs$", @"\\bin$", @"\\obj$", };
-        private ProducerConsumer<string, SettingsEx> _producerConsumer;
-        private SettingsEx? _settings;
+        private ProducerConsumer<string, AppSettings> _producerConsumer;
+        private AppSettings? _settings;
 
         public MainWindow()
         {
             InitializeComponent();
             LoadSettings();
 
-            _producerConsumer = new ProducerConsumer<string, SettingsEx>(x => new MyProducer(), x => new MyConsumer(), _settings, LogWriteLine);
+            _producerConsumer = new ProducerConsumer<string, AppSettings>(x => new MyProducer(), x => new MyConsumer(), _settings, LogWriteLine);
         }
 
         private void LogWriteLine(string msg)
@@ -44,7 +45,7 @@ namespace FilteredFsoDelete
 
         private void SaveSettings()
         {
-            _settings = new SettingsEx
+            _settings = new AppSettings
             {
                 TargetDirectory = TargetDirectory.Text,
 
@@ -73,7 +74,7 @@ namespace FilteredFsoDelete
             }
 
             var json = File.ReadAllText(_settingsFilePath);
-            _settings = JsonSerializer.Deserialize<SettingsEx>(json);
+            _settings = JsonSerializer.Deserialize<AppSettings>(json);
 
             TargetDirectory.Text = _settings.TargetDirectory;
             FilesKeep.Text = String.Join(Environment.NewLine, _settings.FilesKeep);
