@@ -49,11 +49,11 @@ namespace FilteredFsoDelete
             {
                 TargetDirectory = TargetDirectory.Text,
 
-                DirectoriesKeep = DirectoriesKeep.Text,
-                FilesKeep = FilesKeep.Text,
+                DirectoriesKeep = DirectoriesKeep.Items.Cast<MyType>().ToArray(),
+                FilesKeep = FilesKeep.Items.Cast<MyType>().ToArray(),
 
-                DirectoriesDelete = DirectoriesDelete.Text,
-                FilesDelete = FilesDelete.Text,
+                DirectoriesDelete = DirectoriesDelete.Items.Cast<MyType>().ToArray(),
+                FilesDelete = FilesDelete.Items.Cast<MyType>().ToArray(),
             };
 
             var json = JsonSerializer.Serialize(_settings, new JsonSerializerOptions { WriteIndented = true });
@@ -65,10 +65,11 @@ namespace FilteredFsoDelete
             if (!File.Exists(_settingsFilePath))
             {
                 TargetDirectory.Text = _defaultTargetDirectory;
-                FilesKeep.Text = String.Join(Environment.NewLine, _defaultFileKeep);
-                DirectoriesKeep.Text = String.Join(Environment.NewLine, _defaultDirectoriesKeep);
-                FilesDelete.Text = String.Join(Environment.NewLine, _defaultFilesDelete);
-                DirectoriesDelete.Text = String.Join(Environment.NewLine, _defaultDirectoriesDelete);
+
+                foreach (var item in _defaultFileKeep) FilesKeep.Items.Add(new MyType(true, item));
+                foreach (var item in _defaultDirectoriesKeep) DirectoriesKeep.Items.Add(new MyType(true, item));
+                foreach (var item in _defaultFilesDelete) FilesDelete.Items.Add(new MyType(true, item));
+                foreach (var item in _defaultDirectoriesDelete) DirectoriesDelete.Items.Add(new MyType(true, item));
 
                 SaveSettings();
             }
@@ -77,10 +78,16 @@ namespace FilteredFsoDelete
             _settings = JsonSerializer.Deserialize<AppSettings>(json);
 
             TargetDirectory.Text = _settings.TargetDirectory;
-            FilesKeep.Text = String.Join(Environment.NewLine, _settings.FilesKeep);
-            DirectoriesKeep.Text = String.Join(Environment.NewLine, _settings.DirectoriesKeep);
-            FilesDelete.Text = String.Join(Environment.NewLine, _settings.FilesDelete);
-            DirectoriesDelete.Text = String.Join(Environment.NewLine, _settings.DirectoriesDelete);
+
+            FilesKeep.Items.Clear();
+            DirectoriesKeep.Items.Clear();
+            FilesDelete.Items.Clear();
+            DirectoriesDelete.Items.Clear();
+
+            foreach (var item in _settings.FilesKeep) FilesKeep.Items.Add(item);
+            foreach (var item in _settings.DirectoriesKeep) DirectoriesKeep.Items.Add(item);
+            foreach (var item in _settings.FilesDelete) FilesDelete.Items.Add(item);
+            foreach (var item in _settings.DirectoriesDelete) DirectoriesDelete.Items.Add(item);
         }
 
         private void Button_Click_Run(object sender, RoutedEventArgs e)

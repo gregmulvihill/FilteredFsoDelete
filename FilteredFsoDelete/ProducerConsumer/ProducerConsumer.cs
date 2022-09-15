@@ -54,9 +54,6 @@ namespace FilteredFsoDelete.ProducerConsumer
 
         public async Task<int> ProducerTask(int instanceIndex)
         {
-            // fake async/await
-            await Task.CompletedTask;
-
             using (var producer = _createProducer(instanceIndex))
             {
                 producer.Init(_context, _log, _demoMode);
@@ -90,6 +87,9 @@ namespace FilteredFsoDelete.ProducerConsumer
                 }
 
                 _buffer.Complete();
+
+                // fake async/await
+                await Task.CompletedTask;
 
                 return count;
             }

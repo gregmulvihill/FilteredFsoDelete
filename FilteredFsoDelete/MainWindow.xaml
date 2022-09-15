@@ -68,9 +68,18 @@
                 Header="Directories - Keep"
                 ScrollViewer.VerticalScrollBarVisibility="Visible">
                 <ScrollViewer>
-                    <TextBox
-                        x:Name="DirectoriesKeep"
-                        AcceptsReturn="True" />
+                    <ItemsControl
+                        x:Name="DirectoriesKeep">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <CheckBox
+                                        Content="{Binding RegularExpression}"
+                                        IsChecked="{Binding IsChecked}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </ScrollViewer>
             </GroupBox>
 
@@ -80,9 +89,18 @@
                 Header="Files - Keep"
                 ScrollViewer.VerticalScrollBarVisibility="Visible">
                 <ScrollViewer>
-                    <TextBox
-                        x:Name="FilesKeep"
-                        AcceptsReturn="True" />
+                    <ItemsControl
+                        x:Name="FilesKeep">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <CheckBox
+                                        Content="{Binding RegularExpression}"
+                                        IsChecked="{Binding IsChecked}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </ScrollViewer>
             </GroupBox>
 
@@ -92,9 +110,18 @@
                 Header="Directories - Delete"
                 ScrollViewer.VerticalScrollBarVisibility="Visible">
                 <ScrollViewer>
-                    <TextBox
-                        x:Name="DirectoriesDelete"
-                        AcceptsReturn="True" />
+                    <ItemsControl
+                        x:Name="DirectoriesDelete">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <CheckBox
+                                        Content="{Binding RegularExpression}"
+                                        IsChecked="{Binding IsChecked}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </ScrollViewer>
             </GroupBox>
 
@@ -104,9 +131,18 @@
                 Header="Files - Delete"
                 ScrollViewer.VerticalScrollBarVisibility="Visible">
                 <ScrollViewer>
-                    <TextBox
-                        x:Name="FilesDelete"
-                        AcceptsReturn="True" />
+                    <ItemsControl
+                        x:Name="FilesDelete">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <CheckBox
+                                        Content="{Binding RegularExpression}"
+                                        IsChecked="{Binding IsChecked}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </ScrollViewer>
             </GroupBox>
         </Grid>

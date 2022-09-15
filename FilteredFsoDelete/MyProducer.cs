@@ -76,8 +76,9 @@ namespace FilteredFsoDelete
         private IEnumerable<string> GetFileEnumerator()
         {
             var files = Directory.EnumerateFiles(_settings.TargetDirectory, "*.*", SearchOption.AllDirectories);
-            var filesInclude = _settings.FilesKeep.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
-            var filesExclude = _settings.FilesDelete.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
+
+            var filesInclude = _settings.FilesKeep;
+            var filesExclude = _settings.FilesDelete;
 
             return GetFiltered(files, filesInclude, filesExclude);
         }
@@ -85,19 +86,19 @@ namespace FilteredFsoDelete
         private IEnumerable<string> GetDirEnumerator()
         {
             var dirs = Directory.EnumerateDirectories(_settings.TargetDirectory, "*.*", SearchOption.AllDirectories);
-            var dirInclude = _settings.DirectoriesKeep.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).OrderBy(x => x.Length);
-            var dirExclude = _settings.DirectoriesDelete.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).OrderBy(x => x.Length);
+            var dirInclude = _settings.DirectoriesKeep;
+            var dirExclude = _settings.DirectoriesDelete;
 
             return GetFiltered(dirs, dirInclude, dirExclude);
         }
 
-        private IEnumerable<string> GetFiltered(IEnumerable<string> items, IEnumerable<string> include, IEnumerable<string> exclude)
+        private IEnumerable<string> GetFiltered(IEnumerable<string> items, IEnumerable<MyType> include, IEnumerable<MyType> exclude)
         {
             var filteredItems = items
                 .Select(x => Path.GetFullPath(x))
                 .Where(x =>
-                    !include.Any(y => Regex.IsMatch(x, y, RegexOptions.IgnoreCase)) &&
-                    exclude.Any(y => Regex.IsMatch(x, y, RegexOptions.IgnoreCase)))
+                    !include.Any(y => Regex.IsMatch(x, y.RegularExpression, RegexOptions.IgnoreCase)) &&
+                    exclude.Any(y => Regex.IsMatch(x, y.RegularExpression, RegexOptions.IgnoreCase)))
                 .OrderByDescending(x => x).ToArray();
 
             return filteredItems;
