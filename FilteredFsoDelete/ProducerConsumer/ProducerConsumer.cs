@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Threading.Tasks.Dataflow;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
@@ -32,14 +33,14 @@ namespace FilteredFsoDelete.ProducerConsumer
             _demoMode = demoMode;
             _buffer = new BufferBlock<T>();
 
-            // fake async/await
-            await Task.CompletedTask;
+            //// fake async/await
+            //await Task.CompletedTask;
 
             var ct = Enumerable.Range(0, 5).Select(x => Task.Run(() => ConsumerTask(x))).ToArray();
             var pt = Enumerable.Range(0, 1).Select(x => Task.Run(() => ProducerTask(x))).ToArray();
 
-            Task.WaitAll(pt);
-            Task.WaitAll(ct);
+            await Task.WhenAll(pt);
+            await Task.WhenAll(ct);
 
             var ctResults = ct.Select(x => x.Result).ToArray();
             var ptResults = pt.Select(x => x.Result).ToArray();

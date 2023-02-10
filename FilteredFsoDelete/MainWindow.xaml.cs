@@ -13,8 +13,8 @@ namespace FilteredFsoDelete
         private string _settingsFilePath = @".\settings.json";
         private string _defaultTargetDirectory = @"C:\Repos";
         private IEnumerable<string> _defaultFileKeep = new string[] { };
-        private IEnumerable<string> _defaultDirectoriesKeep = new[] { @"\\lib\\", };
-        private IEnumerable<string> _defaultFilesDelete = new[] { @"\.user$", };
+        private IEnumerable<string> _defaultDirectoriesKeep = new[] { @"\\lib\\", @"\\Lib\\", };
+        private IEnumerable<string> _defaultFilesDelete = new[] { @"\.user$", @"_wpftmp\.csproj" };
         private IEnumerable<string> _defaultDirectoriesDelete = new[] { @"\\\.vs$", @"\\bin$", @"\\obj$", };
         private ProducerConsumer<string, AppSettings> _producerConsumer;
         private AppSettings? _settings;
@@ -22,6 +22,7 @@ namespace FilteredFsoDelete
         public MainWindow()
         {
             InitializeComponent();
+
             LoadSettings();
 
             _producerConsumer = new ProducerConsumer<string, AppSettings>(x => new MyProducer(), x => new MyConsumer(), _settings, LogWriteLine);
@@ -45,19 +46,19 @@ namespace FilteredFsoDelete
 
         private void SaveSettings()
         {
-            _settings = new AppSettings
+            if (_settings != null)
             {
-                TargetDirectory = TargetDirectory.Text,
+                _settings.TargetDirectory = TargetDirectory.Text;
 
-                DirectoriesKeep = DirectoriesKeep.Items.Cast<MyType>().ToArray(),
-                FilesKeep = FilesKeep.Items.Cast<MyType>().ToArray(),
+                _settings.DirectoriesKeep = DirectoriesKeep.Items.Cast<MyType>().ToArray();
+                _settings.FilesKeep = FilesKeep.Items.Cast<MyType>().ToArray();
 
-                DirectoriesDelete = DirectoriesDelete.Items.Cast<MyType>().ToArray(),
-                FilesDelete = FilesDelete.Items.Cast<MyType>().ToArray(),
-            };
+                _settings.DirectoriesDelete = DirectoriesDelete.Items.Cast<MyType>().ToArray();
+                _settings.FilesDelete = FilesDelete.Items.Cast<MyType>().ToArray();
 
-            var json = JsonSerializer.Serialize(_settings, new JsonSerializerOptions { WriteIndented = true });
-            File.WriteAllText(_settingsFilePath, json);
+                var json = JsonSerializer.Serialize(_settings, new JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(_settingsFilePath, json);
+            }
         }
 
         private void LoadSettings()
@@ -96,7 +97,10 @@ namespace FilteredFsoDelete
 
             Log.Items.Clear();
 
-            Task.Run(async () => await _producerConsumer.RunThreadAsync(false));
+            if (Directory.Exists(_settings?.TargetDirectory))
+            {
+                Task.Run(async () => await _producerConsumer.RunThreadAsync(false));
+            }
         }
 
         private void Button_Click_Test(object sender, RoutedEventArgs e)

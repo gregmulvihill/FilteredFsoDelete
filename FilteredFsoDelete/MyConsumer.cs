@@ -21,6 +21,10 @@ namespace FilteredFsoDelete
 
         public bool Consume(int instanceIndex, string path)
         {
+            //if (path.Contains("nuget", StringComparison.InvariantCultureIgnoreCase))
+            //{
+            //}
+
             _log($"{nameof(MyConsumer)} {Thread.CurrentThread.ManagedThreadId:N0} {path}");
 
             if (_demoMode)

@@ -58,7 +58,7 @@
                     <TextBox
                         x:Name="TargetDirectory"
                         VerticalAlignment="Center"
-                        Text="C:\ExampleDir\ExampleSubDir" />
+                        Text="C:\" />
                 </DockPanel>
             </GroupBox>
 
