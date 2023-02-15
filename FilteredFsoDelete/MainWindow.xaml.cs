@@ -11,11 +11,11 @@ namespace FilteredFsoDelete
     public partial class MainWindow : Window
     {
         private string _settingsFilePath = @".\settings.json";
-        private string _defaultTargetDirectory = @"C:\Repos";
+        private string _defaultTargetDirectory = @"D:\Repos";
         private IEnumerable<string> _defaultFileKeep = new string[] { };
         private IEnumerable<string> _defaultDirectoriesKeep = new[] { @"\\lib\\", @"\\Lib\\", };
         private IEnumerable<string> _defaultFilesDelete = new[] { @"\.user$", @"_wpftmp\.csproj" };
-        private IEnumerable<string> _defaultDirectoriesDelete = new[] { @"\\\.vs$", @"\\bin$", @"\\obj$", };
+        private IEnumerable<string> _defaultDirectoriesDelete = new[] { @"\\\.vs$", @"\\bin$", @"\\obj$", @"\\packages$", };
         private ProducerConsumer<string, AppSettings> _producerConsumer;
         private AppSettings? _settings;
 
@@ -44,21 +44,25 @@ namespace FilteredFsoDelete
             });
         }
 
-        private void SaveSettings()
+        private string SaveSettings()
         {
-            if (_settings != null)
+            if (_settings == null)
             {
-                _settings.TargetDirectory = TargetDirectory.Text;
-
-                _settings.DirectoriesKeep = DirectoriesKeep.Items.Cast<MyType>().ToArray();
-                _settings.FilesKeep = FilesKeep.Items.Cast<MyType>().ToArray();
-
-                _settings.DirectoriesDelete = DirectoriesDelete.Items.Cast<MyType>().ToArray();
-                _settings.FilesDelete = FilesDelete.Items.Cast<MyType>().ToArray();
-
-                var json = JsonSerializer.Serialize(_settings, new JsonSerializerOptions { WriteIndented = true });
-                File.WriteAllText(_settingsFilePath, json);
+                _settings = new AppSettings();
             }
+
+            _settings.TargetDirectory = TargetDirectory.Text;
+
+            _settings.DirectoriesKeep = DirectoriesKeep.Items.Cast<MyType>().ToArray();
+            _settings.FilesKeep = FilesKeep.Items.Cast<MyType>().ToArray();
+
+            _settings.DirectoriesDelete = DirectoriesDelete.Items.Cast<MyType>().ToArray();
+            _settings.FilesDelete = FilesDelete.Items.Cast<MyType>().ToArray();
+
+            var json = JsonSerializer.Serialize(_settings, new JsonSerializerOptions { WriteIndented = true });
+            File.WriteAllText(_settingsFilePath, json);
+
+            return _settingsFilePath;
         }
 
         private void LoadSettings()
